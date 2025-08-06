@@ -1,0 +1,65 @@
+services:
+  broker-reverseproxy:
+    image: alpine/socat
+    container_name: broker-reverseproxy
+    command: tcp-listen:443,fork,reuseaddr tcp-connect:${BROKER_SERVER_HOST}:${BROKER_SERVER_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  omejdn:
+    image: alpine/socat
+    container_name: omejdn
+    command: tcp-listen:443,fork,reuseaddr tcp-connect:${DAPS_SERVER_HOST}:${DAPS_SERVER_PORT}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:13
+    container_name: 'postgres-container'
+    network_mode: host
+    environment:
+      - POSTGRES_USER=postgresuser
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=connectorbd
+    volumes:
+      - connector-data:/var/lib/postgresql/data
+      
+  connector:
+    image: ghcr.io/international-data-spaces-association/dataspace-connector:8.0.2
+    container_name: connector
+    ports:
+      - "443:8080"
+    networks:
+      - default
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CONFIGURATION_PATH=/config/config.json
+      - DAPS_URL=https://omejdn
+      - DAPS_TOKEN_URL=https://omejdn/auth/token
+      - DAPS_KEY_URL=https://omejdn/auth/jwks.json
+      - DAPS_INCOMING_DAT_DEFAULT_WELLKNOWN=/jwks.json
+      - SERVER_SSL_KEY-STORE=file:///conf/connector.p12
+      # Define the PostgreSQL setup     
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/connectorbd
+      - SPRING_DATASOURCE_USERNAME=postgresuser
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_PLATFORM=postgres
+      - SPRING_DATASOURCE_DRIVERCLASSNAME=org.postgresql.Driver
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      # Timeouts for HTTP requests
+      - HTTP_TIMEOUT_CONNECT=20000
+      - HTTP_TIMEOUT_READ=20000
+      - HTTP_TIMEOUT_WRITE=20000
+      - HTTP_TIMEOUT_CALL=20000
+    volumes:
+      - ./DataspaceConnector/conf/config.json:/config/config.json
+      - ./DataspaceConnector/conf/connector.p12:/conf/connector.p12
+      - ./DataspaceConnector/conf/truststore.p12:/config/truststore.p12
+    depends_on:
+      - postgresb
+
+
+
+volumes:
+  connector-data: {}
