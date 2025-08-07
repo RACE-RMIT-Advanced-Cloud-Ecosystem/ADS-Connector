@@ -57,9 +57,7 @@ services:
       - ./DataspaceConnector/conf/connector.p12:/conf/connector.p12
       - ./DataspaceConnector/conf/truststore.p12:/config/truststore.p12
     depends_on:
-      - postgresb
-
-
+      - postgres
 
 volumes:
   connector-data: {}
