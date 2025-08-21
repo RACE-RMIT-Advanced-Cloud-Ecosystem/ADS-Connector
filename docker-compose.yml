@@ -28,7 +28,7 @@ services:
     image: ghcr.io/international-data-spaces-association/dataspace-connector:8.0.2
     container_name: connector
     ports:
-      - "443:8080"
+      - "${LISTEN_PORT}:8080"
     networks:
       - default
     extra_hosts:
