@@ -3,8 +3,6 @@ services:
     image: alpine/socat
     container_name: omejdn
     command: tcp-listen:443,fork,reuseaddr tcp-connect:${DAPS_SERVER_HOST}:${DAPS_SERVER_PORT}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:13
@@ -51,6 +49,19 @@ services:
       - ./DataspaceConnector/conf/truststore.p12:/config/truststore.p12
     depends_on:
       - postgres
+    
+  dashboard:
+    image: public.ecr.aws/g3a7j6g7/race-rmit-advanced-cloud-ecosystem_ads-dashboard:latest
+    container_name: dashboard
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - dashboard-data:/app/data
+    networks:
+      - local
+    ports:
+      - 80:3031
 
 volumes:
   connector-data: {}
+  dashboard-data: {}
