@@ -1,11 +1,4 @@
 services:
-  broker-reverseproxy:
-    image: alpine/socat
-    container_name: broker-reverseproxy
-    command: tcp-listen:443,fork,reuseaddr tcp-connect:${BROKER_SERVER_HOST}:${BROKER_SERVER_PORT}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
   omejdn:
     image: alpine/socat
     container_name: omejdn
