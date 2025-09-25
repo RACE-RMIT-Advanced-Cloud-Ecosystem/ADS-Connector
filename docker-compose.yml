@@ -58,7 +58,7 @@ services:
     volumes:
       - dashboard-data:/app/data
     networks:
-      - local
+      - default
     ports:
       - 80:3031
 
