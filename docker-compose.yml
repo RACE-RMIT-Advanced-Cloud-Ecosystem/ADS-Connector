@@ -1,13 +1,29 @@
 services:
+  nginx:
+    image: nginx:1.25.3
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template
+      - ./certs/connector.cert:/etc/nginx/certificate.cert
+      - ./certs/connector.key:/etc/nginx/private-key.key
+    depends_on:
+      - connector
+      - dashboard
+
   omejdn:
     image: alpine/socat
     container_name: omejdn
+    restart: unless-stopped
     command: tcp-listen:443,fork,reuseaddr tcp-connect:${DAPS_SERVER_HOST}:${DAPS_SERVER_PORT}
 
   postgres:
     image: postgres:13
+    restart: unless-stopped
     container_name: 'postgres-container'
-    network_mode: host
     environment:
       - POSTGRES_USER=postgresuser
       - POSTGRES_PASSWORD=password
@@ -18,12 +34,7 @@ services:
   connector:
     image: ghcr.io/international-data-spaces-association/dataspace-connector:8.0.2
     container_name: connector
-    ports:
-      - "${LISTEN_PORT}:8080"
-    networks:
-      - default
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
     environment:
       - CONFIGURATION_PATH=/config/config.json
       - DAPS_URL=https://omejdn
@@ -32,7 +43,7 @@ services:
       - DAPS_INCOMING_DAT_DEFAULT_WELLKNOWN=/jwks.json
       - SERVER_SSL_KEY-STORE=file:///conf/connector.p12
       # Define the PostgreSQL setup     
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/connectorbd
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-container:5432/connectorbd
       - SPRING_DATASOURCE_USERNAME=postgresuser
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_DATASOURCE_PLATFORM=postgres
@@ -44,23 +55,21 @@ services:
       - HTTP_TIMEOUT_WRITE=20000
       - HTTP_TIMEOUT_CALL=20000
     volumes:
-      - ./DataspaceConnector/conf/config.json:/config/config.json
-      - ./DataspaceConnector/conf/connector.p12:/conf/connector.p12
-      - ./DataspaceConnector/conf/truststore.p12:/config/truststore.p12
+      - ./config.json:/config/config.json
+      - ./certs/connector.p12:/conf/connector.p12
+      - ./certs/truststore.p12:/config/truststore.p12
     depends_on:
       - postgres
     
   dashboard:
     image: public.ecr.aws/g3a7j6g7/race-rmit-advanced-cloud-ecosystem_ads-dashboard:latest
+    restart: unless-stopped
     container_name: dashboard
     environment:
       - NODE_ENV=production
     volumes:
       - dashboard-data:/app/data
-    networks:
-      - default
-    ports:
-      - 80:3031
+      - .env.dashboard:/app/.env.production
 
 volumes:
   connector-data: {}
