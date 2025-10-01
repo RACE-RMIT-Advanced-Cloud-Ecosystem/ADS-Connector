@@ -62,7 +62,7 @@ services:
       - postgres
     
   dashboard:
-    image: public.ecr.aws/g3a7j6g7/race-rmit-advanced-cloud-ecosystem_ads-dashboard:latest
+    image: public.ecr.aws/ads-poc/race-rmit-advanced-cloud-ecosystem_ads-dashboard:latest
     restart: unless-stopped
     container_name: dashboard
     environment:
