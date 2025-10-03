@@ -1,0 +1,18 @@
+{
+    "connectors": [
+        {
+            "name": "Connector",
+            "endpoint": "https://connector:8080",
+            "username": "admin",
+            "password": "password"
+        }
+    ],
+    "brokers": [
+        {
+            "title": "Default Broker",
+            "description": "Default built-in broker",
+            "location": "https://omejdn/broker/infrastructure"
+        }
+    ],
+    "ask-rda-key": true
+}
