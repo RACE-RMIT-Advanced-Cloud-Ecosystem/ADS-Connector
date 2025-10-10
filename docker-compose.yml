@@ -67,10 +67,10 @@ services:
     container_name: dashboard
     environment:
       - NODE_ENV=production
-      - ./init.json:/app/frontend/src/configurations/init.json
     volumes:
       - dashboard-data:/app/data
       - .env.dashboard:/app/.env.production
+      - ./init.json:/app/frontend/src/configurations/init.json
 
 volumes:
   connector-data: {}
