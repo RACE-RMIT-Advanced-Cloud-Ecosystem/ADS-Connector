@@ -1,4 +1,5 @@
 {
+    "connect-to-ds": true,
     "connectors": [
         {
             "name": "Connector",
